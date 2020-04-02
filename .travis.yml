@@ -1,0 +1,10 @@
+---
+dist: bionic
+
+language: go
+go:
+  - "1.13"
+
+script:
+  - make lint
+  - make test
