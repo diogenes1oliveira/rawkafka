@@ -1,11 +1,11 @@
 # rawkafka
 
-Forward raw HTTP requests to a Kafka cluster
-
-[![Build Status](https://travis-ci.org/diogenes1oliveira/rawkafka.svg?branch=master)](https://travis-ci.org/diogenes1oliveira/rawkafka)
+[![Build Status](https://travis-ci.com/diogenes1oliveira/rawkafka.svg?branch=master)](https://travis-ci.com/diogenes1oliveira/rawkafka)
 [![Go Report Card](https://goreportcard.com/badge/github.com/diogenes1oliveira/rawkafka)](https://goreportcard.com/report/github.com/diogenes1oliveira/rawkafka)
 [![License](https://img.shields.io/github/license/diogenes1oliveira/rawkafka)](https://github.com/diogenes1oliveira/rawkafka/blob/master/LICENSE)
 [![GoDoc](https://godoc.org/github.com/diogenes1oliveira/rawkafka?status.svg)](https://godoc.org/github.com/diogenes1oliveira/rawkafka)
+
+Forward raw HTTP requests to a Kafka cluster
 
 ![data transformation in rawkafka](https://github.com/diogenes1oliveira/rawkafka/blob/master/diagram.svg "rawkafka - data transformation")
 
