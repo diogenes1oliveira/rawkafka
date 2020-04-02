@@ -4,12 +4,12 @@ Forward raw HTTP requests to a Kafka cluster
 
 ## About
 
-The Kafka REST protocol requires an specific format for its requests, as you can
+The Kafka REST protocol requires a specific format for its requests, as you can
 see in the [API Spec](https://docs.confluent.io/current/kafka-rest/api.html#post--topics-(string-topic_name)).
 This service is a simple Go HTTP server that listens for all methods and paths, 
 formatting the request properly and sending them to a Kafka REST endpoint.
 
-At startup, the schema configured is automatically registered at the Schema
+At startup, the configured schema is automatically registered at the Schema
 Registry endpoint.
 
 Link to the current Avro schema: https://github.com/diogenes1oliveira/rawkafka/blob/master/request.avsc
