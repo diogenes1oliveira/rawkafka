@@ -2,6 +2,8 @@
 
 Forward raw HTTP requests to a Kafka cluster
 
+![data transformation in rawkafka](https://github.com/diogenes1oliveira/rawkafka/blob/master/diagram.svg "rawkafka - data transformation")
+
 ## About
 
 The Kafka REST protocol requires a specific format for its requests, as you can
