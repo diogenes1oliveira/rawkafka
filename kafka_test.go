@@ -19,11 +19,11 @@ func testRunEchoServer(response string, port int) (string, *http.Server, error) 
 
 	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		defer req.Body.Close()
-		w.Write([]byte(response))
+		_, _ = w.Write([]byte(response))
 	})
 
 	go func() {
-		server.ListenAndServe()
+		_ = server.ListenAndServe()
 	}()
 
 	start := time.Now()
@@ -35,7 +35,7 @@ func testRunEchoServer(response string, port int) (string, *http.Server, error) 
 		if err == nil && resp.StatusCode == http.StatusOK {
 			break
 		}
-		if time.Now().Sub(start).Milliseconds() > 1000.0 {
+		if time.Since(start).Milliseconds() > 1000.0 {
 			return "", nil, fmt.Errorf("timeout expired")
 		}
 		time.Sleep(50 * time.Millisecond)
@@ -51,7 +51,10 @@ func TestKafkaCodecRegister(t *testing.T) {
 	addr, server, err := testRunEchoServer(`{"id": 999}`, port)
 	r.NoErrorf(err, "failed to start the server")
 
-	defer server.Shutdown(context.Background())
+	defer func() {
+		_ = server.Shutdown(context.Background())
+	}()
+
 	addr = "http://" + addr
 
 	codec, err := LoadKafkaCodec(SchemaDefaultLocation)

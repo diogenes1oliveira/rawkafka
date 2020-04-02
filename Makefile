@@ -3,6 +3,8 @@ BUILD_BASE ?= build
 CMD_BASE ?= cmd
 GO ?= go
 GO_TEST ?= $(GO) test
+GO_FMT ?= gofmt
+DOCKER ?= docker
 
 GO_FILES := $(wildcard *.go)
 COMMANDS := $(shell find $(CMD_BASE) -mindepth 1 -maxdepth 1 | sed 's,^$(CMD_BASE)/,,')
@@ -22,6 +24,12 @@ test:
 		$(GO_TEST) -v || exit 1; \
 	done
 	@echo '# all tests passed--'
+
+.PHONY: lint
+lint:
+	@$(DOCKER) run --rm -v $(PROJECT_ROOT):/app -w /app golangci/golangci-lint:v1.24.0 golangci-lint run -v
+	@$(GO) vet
+	@test -z "`$(GO_FMT) -s -l .`"
 
 .PHONY: install
 install: 

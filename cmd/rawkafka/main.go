@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/diogenes1oliveira/rawkafka"
 	"github.com/jessevdk/go-flags"
@@ -21,25 +22,39 @@ var defaultError = map[string]interface{}{
 	"message":    "rawkafka: internal server error",
 }
 
+// RequestLoggerFunc is a function that acts as a logger for HTTP requests
+type RequestLoggerFunc func(statusCode int, message string, args ...interface{})
+
 // HandleRequest sends the request data to a Kafka REST endpoint
 func HandleRequest(w http.ResponseWriter, r *http.Request) {
+	t0 := time.Now()
 	reqInfo := rawkafka.RequestInfo{}
+
+	log := func(statusCode int, message string, args ...interface{}) {
+		timeSpent := float64(time.Since(t0).Microseconds()) / 1000.0
+		prefix := fmt.Sprintf("%s - %s %s - [%d %.2f ms] - ", reqInfo.IP, r.Method, r.URL.String(), statusCode, timeSpent)
+		log.Printf(prefix+message, args...)
+	}
+
 	reqInfo.Parse(r)
 
 	reqBody, err := codec.Restify(&reqInfo)
 	if err != nil {
-		respondWithError(w, err)
+		respondWithError(w, err, log)
+		log(500, "ERROR: %v\n", err.Error())
 		return
 	}
 
 	response, err := http.Post(cmdFlags.RestEndpoint, requestContentType, bytes.NewBuffer(reqBody))
 	if err != nil {
-		respondWithError(w, err)
+		respondWithError(w, err, log)
+		log(500, "ERROR: %v\n", err.Error())
 		return
 	}
 	responseBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		respondWithError(w, err)
+		respondWithError(w, err, log)
+		log(500, "ERROR: %v\n", err.Error())
 		return
 	}
 
@@ -50,7 +65,16 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(response.StatusCode)
-	w.Write(responseBody)
+	if _, err := w.Write(responseBody); err != nil {
+		log(0, "ERROR: Failed to write the response body - %v\n", err.Error())
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		log(response.StatusCode, "Bad response from Kafka REST: %s\n", string(responseBody))
+	} else {
+		log(response.StatusCode, "%s\n", string(responseBody))
+	}
 }
 
 // codec contains the encoder of requests to Kafka REST
@@ -105,7 +129,7 @@ var defaultErrorMessage = func() []byte {
 	return content
 }()
 
-func respondWithError(w http.ResponseWriter, err error) {
+func respondWithError(w http.ResponseWriter, err error, log RequestLoggerFunc) {
 	errMessage := err.Error()
 	reqBody, err := json.MarshalIndent(map[string]interface{}{
 		"error_code": 500,
@@ -118,6 +142,7 @@ func respondWithError(w http.ResponseWriter, err error) {
 
 	w.Header().Set("Content-type", responseContentType)
 	w.WriteHeader(http.StatusInternalServerError)
-	w.Write(reqBody)
-	return
+	if _, err = w.Write(reqBody); err != nil {
+		log(0, "ERROR: Failed to write the error response body - %v\n", err)
+	}
 }

@@ -96,7 +96,7 @@ func TestGetIPFromRequest(t *testing.T) {
 		return req
 	}
 
-	parsedIP, err := GetIPFromRequest(createTestRequest("", ""))
+	_, err := GetIPFromRequest(createTestRequest("", ""))
 	r.Errorf(err, "Should fail with no IP")
 
 	i := 0
@@ -107,7 +107,7 @@ func TestGetIPFromRequest(t *testing.T) {
 		req := createTestRequest("", "")
 		req.Header.Set(headerName, ip)
 
-		parsedIP, err = GetIPFromRequest(req)
+		parsedIP, err := GetIPFromRequest(req)
 		r.NoErrorf(err, "Failed to parse the IP")
 		r.Equal(ip, parsedIP)
 	}

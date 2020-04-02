@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -67,7 +66,6 @@ func registerSchema(schema, schemaType, endpoint, topic string) (int, error) {
 		"schema": schema,
 	})
 	if err != nil {
-		log.Printf("Failed to marshal the schema\n")
 		return 0, err
 	}
 	if !strings.Contains(endpoint, "://") {
@@ -77,20 +75,16 @@ func registerSchema(schema, schemaType, endpoint, topic string) (int, error) {
 		return 0, fmt.Errorf("Bad topic value: %#v", topic)
 	}
 	registerEndpoint := urljoin(endpoint, "subjects", topic+"-"+schemaType, "versions")
-	log.Printf("Registering a %s schema at %s\n", schemaType, registerEndpoint)
 
 	response, err := http.Post(registerEndpoint, "application/vnd.schemaregistry.v1+json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		log.Printf("Failed to register the schema: %v\n", err)
 		return 0, err
 	}
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Printf("Failed to read the schema registry response")
 		return 0, err
 	}
 	if response.StatusCode != http.StatusOK {
-		log.Printf("schema registry error: %s\n", string(content))
 		return 0, fmt.Errorf("Error while registering schema: %d", response.StatusCode)
 	}
 
@@ -99,11 +93,9 @@ func registerSchema(schema, schemaType, endpoint, topic string) (int, error) {
 	}
 
 	if err := json.Unmarshal(content, &schemaInfo); err != nil {
-		log.Printf("failed to decode the schema registry response: %s\n", string(content))
 		return 0, err
 	}
 
-	log.Printf("Parsed SchemaID = %d from the schema registry response: %s\n", schemaInfo.ID, string(content))
 	return schemaInfo.ID, nil
 }
 
