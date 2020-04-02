@@ -16,6 +16,20 @@ Registry endpoint.
 
 Link to the current Avro schema: https://github.com/diogenes1oliveira/rawkafka/blob/master/request.avsc
 
+## Install
+
+You need the following requirements:
+
+* Go >= 1.13
+* GCC
+* GNU Make
+
+In the project root, just run:
+
+```sh
+$ make install
+```
+
 ## Usage
 
 ``` 
