@@ -1,0 +1,50 @@
+{
+  "namespace": "com.github.diogenes1oliveira.rawkafka",
+  "name": "RawRequest",
+  "doc": "Raw HTTP request",
+  "type": "record",
+  "fields": [
+    {
+      "name": "headers",
+      "doc": "HTTP headers present in the request",
+      "default": {},
+      "type": {
+        "type": "map",
+        "values": {
+          "items": "string",
+          "type": "array"
+        }
+      }
+    },
+    {
+      "name": "ip",
+      "doc": "IP of the remote client",
+      "default": "",
+      "type": "string"
+    },
+    {
+      "name": "method",
+      "doc": "Method of the HTTP request",
+      "default": "",
+      "type": "string"
+    },
+    {
+      "name": "server_time",
+      "doc": "Time at which the request was processed in the server",
+      "logicalType": "timestamp-millis",
+      "type": "string"
+    },
+    {
+      "name": "url",
+      "doc": "Raw HTTP URL",
+      "default": "",
+      "type": "string"
+    },
+    {
+      "name": "body",
+      "doc": "Raw bytes in a POST request",
+      "default": "",
+      "type": "bytes"
+    }
+  ]
+}
