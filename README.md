@@ -21,18 +21,12 @@ Registry endpoint.
 
 Link to the current Avro schema: https://github.com/diogenes1oliveira/rawkafka/blob/master/request.avsc
 
-## Install
+## Running
 
-You need the following requirements:
-
-* Go >= 1.13
-* GCC
-* GNU Make
-
-In the project root, just run:
+Run it with Docker:
 
 ``` sh
-$ make install
+$ docker run -it --rm -e RAWKAFKA_TOPIC=SampleTopic -p 7000:7000 diogenes1oliveira/rawkafka --port 7000
 ```
 
 ## Usage
@@ -52,5 +46,19 @@ Application Options:
 
 Help Options:
   -h, --help                 Show this help message
+```
+
+## Install
+
+You need the following requirements:
+
+* Go >= 1.13
+* GCC
+* GNU Make
+
+In the project root, just run:
+
+``` sh
+$ make install
 ```
 

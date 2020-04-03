@@ -31,7 +31,7 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
 	reqInfo := rawkafka.RequestInfo{}
 
 	log := func(statusCode int, message string, args ...interface{}) {
-		timeSpent := float64(time.Since(t0).Microseconds()) / 1000.0
+		timeSpent := 1000.0 * time.Since(t0).Seconds()
 		prefix := fmt.Sprintf("%s - %s %s - [%d %.2f ms] - ", reqInfo.IP, r.Method, r.URL.String(), statusCode, timeSpent)
 		log.Printf(prefix+message, args...)
 	}

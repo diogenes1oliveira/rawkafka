@@ -1,6 +1,6 @@
 module github.com/diogenes1oliveira/rawkafka
 
-go 1.13
+go 1.11
 
 require (
 	github.com/bxcodec/faker/v3 v3.3.0

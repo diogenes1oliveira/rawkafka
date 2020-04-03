@@ -27,9 +27,14 @@ test:
 
 .PHONY: lint
 lint:
-	@$(DOCKER) run --rm -v $(PROJECT_ROOT):/app -w /app golangci/golangci-lint:v1.24.0 golangci-lint run -v
+	@echo running golangci-lint
+	@$(DOCKER) run --rm -v $(PROJECT_ROOT):/app -w /app golangci/golangci-lint:v1.22.0 golangci-lint run
+	@echo running go vet
 	@$(GO) vet
+	@echo running gofmt
 	@test -z "`$(GO_FMT) -s -l .`"
+	@echo running hadolint
+	@$(DOCKER) run --rm -i hadolint/hadolint < Dockerfile
 
 .PHONY: install
 install: 
