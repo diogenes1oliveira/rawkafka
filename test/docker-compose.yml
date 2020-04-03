@@ -34,30 +34,30 @@ services:
       cluster:
         aliases:
           - kafka.localhost
-  kafka-control-center:
-    image: confluentinc/cp-enterprise-control-center:5.4.1
-    command: >-
-      wait-for-it -s -t 120 kafka.localhost:9092 -- /etc/confluent/docker/run
-    environment:
-      CONTROL_CENTER_ZOOKEEPER_CONNECT: zookeeper.localhost:2181
-      CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka.localhost:9092
-      CONTROL_CENTER_REPLICATION_FACTOR: 1
-      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
-      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
-      CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 2
-      CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry.localhost:9081"
-    ulimits:
-      nofile:
-        soft: 16384
-        hard: 16384
-    ports:
-      - "${KAFKA_CONTROL_CENTER_PORT:-9021}:9021"
-    volumes:
-      - ./wait-for-it.sh:/bin/wait-for-it
-    networks:
-      cluster:
-        aliases:
-          - kafka-control-center.localhost
+  # kafka-control-center:
+  #   image: confluentinc/cp-enterprise-control-center:5.4.1
+  #   command: >-
+  #     wait-for-it -s -t 120 kafka.localhost:9092 -- /etc/confluent/docker/run
+  #   environment:
+  #     CONTROL_CENTER_ZOOKEEPER_CONNECT: zookeeper.localhost:2181
+  #     CONTROL_CENTER_BOOTSTRAP_SERVERS: kafka.localhost:9092
+  #     CONTROL_CENTER_REPLICATION_FACTOR: 1
+  #     CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+  #     CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+  #     CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: 2
+  #     CONTROL_CENTER_SCHEMA_REGISTRY_URL: "http://schema-registry.localhost:9081"
+  #   ulimits:
+  #     nofile:
+  #       soft: 16384
+  #       hard: 16384
+  #   ports:
+  #     - "${KAFKA_CONTROL_CENTER_PORT:-9021}:9021"
+  #   volumes:
+  #     - ./wait-for-it.sh:/bin/wait-for-it
+  #   networks:
+  #     cluster:
+  #       aliases:
+  #         - kafka-control-center.localhost
 
   kafka-rest:
     image: confluentinc/cp-kafka-rest:5.4.1
@@ -92,17 +92,17 @@ services:
       cluster:
         aliases:
           - schema-registry.localhost
-  schema-registry-ui:
-    image: landoop/schema-registry-ui
-    environment:
-      - SCHEMAREGISTRY_URL=http://schema-registry.localhost:9081
-      - PROXY=true
-    ports:
-      - "${KAFKA_SCHEMA_REGISTRY_UI_PORT:-9090}:8000"
-    networks:
-      cluster:
-        aliases:
-          - schema-registry-ui.localhost
+  # schema-registry-ui:
+  #   image: landoop/schema-registry-ui
+  #   environment:
+  #     - SCHEMAREGISTRY_URL=http://schema-registry.localhost:9081
+  #     - PROXY=true
+  #   ports:
+  #     - "${KAFKA_SCHEMA_REGISTRY_UI_PORT:-9090}:8000"
+  #   networks:
+  #     cluster:
+  #       aliases:
+  #         - schema-registry-ui.localhost
 
 networks:
   cluster:

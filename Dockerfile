@@ -1,4 +1,4 @@
-FROM golang:1.11-alpine as builder
+FROM golang:1.13-alpine as builder
 
 WORKDIR /app
 COPY ./Makefile ./go.* ./*.go ./
@@ -6,11 +6,11 @@ COPY ./cmd/ ./cmd/
 
 RUN \
   apk add --no-cache --virtual .build-deps \
-  make=4.2.1-r2 git=2.22.2-r0 build-base=0.5-r1 && \
+  make=4.2.1-r2 git=2.24.1-r0 build-base=0.5-r1 && \
   make build && \
   apk del .build-deps
 
-FROM alpine:3.10
+FROM alpine:3.11
 
 COPY --from=builder /app/build/rawkafka* /bin/
 

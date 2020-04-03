@@ -5,11 +5,11 @@ function wait-for-ping {
   local max_wait_time="${2:-10}"
   local tries=0
 
-  while ! ( curl -m 1 -s "$url" 2>&1 | grep -q pong ) ; do
+  while ! ( curl -m 1 -s "$url" 2>&1 | grep -q "${3:-pong}" ) ; do
     tries="$((tries+1))"
 
     if [ "$tries" -ge "$max_wait_time" ]; then
-      if curl -m 1 -sv "$url"; then
+      if curl -m 1 -sv "$url" 2>&1 | tap "curl"; then
         break
       fi
       fatal "Timeout expired while waiting for pong: ${max_wait_time}s"
@@ -25,7 +25,7 @@ function info {
 
 function fatal {
   echo "# FATAL: $@" >&3
-  return 1
+  exit 1
 }
 
 function tap {

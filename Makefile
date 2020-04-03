@@ -58,6 +58,10 @@ uninstall:
 clean:
 	@rm -rf $(BUILD_BASE)
 
+.PHONY: mod-tidy
+mod-tidy:
+	@$(GO) mod tidy -v
+
 $(BUILD_BASE)/%: cmd/% $(GO_FILES)
 	@mkdir -p $(BUILD_BASE)
 	@export BUILD_OUTPUT=`realpath "$(BUILD_BASE)"` && \

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -65,27 +66,46 @@ func registerSchema(schema, schemaType, endpoint, topic string) (int, error) {
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"schema": schema,
 	})
+	requestBuffer := bytes.NewBuffer(requestBody)
 	if err != nil {
+		log.Printf("failed to create a bytes buffer for the request body\n")
 		return 0, err
 	}
 	if !strings.Contains(endpoint, "://") {
+		log.Printf("bad endpoint: %#+v\n", endpoint)
 		return 0, fmt.Errorf("Bad endpoint value: %#v", endpoint)
 	}
 	if topic == "" {
+		log.Printf("bad topic: %#+v\n", topic)
 		return 0, fmt.Errorf("Bad topic value: %#v", topic)
 	}
 	registerEndpoint := urljoin(endpoint, "subjects", topic+"-"+schemaType, "versions")
+	log.Printf("registering schema at %#+v\n", registerEndpoint)
 
-	response, err := http.Post(registerEndpoint, "application/vnd.schemaregistry.v1+json", bytes.NewBuffer(requestBody))
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", registerEndpoint, requestBuffer)
 	if err != nil {
+		log.Printf("failed to create the schema registry request\n")
 		return 0, err
 	}
+	req.Close = true
+	req.Header.Set("Content-Type", "application/vnd.schemaregistry.v1+json")
+
+	response, err := client.Do(req)
+	if err != nil {
+		log.Printf("schema register request failed\n")
+		return 0, err
+	}
+	defer response.Body.Close()
+
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
+		log.Printf("could't read the schema registry response\n")
 		return 0, err
 	}
 	if response.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("Error while registering schema: %d", response.StatusCode)
+		log.Printf("bad HTTP response from the schema registry\n")
+		return 0, fmt.Errorf("Bad HTTP response while registering schema: %d", response.StatusCode)
 	}
 
 	var schemaInfo struct {
@@ -93,6 +113,7 @@ func registerSchema(schema, schemaType, endpoint, topic string) (int, error) {
 	}
 
 	if err := json.Unmarshal(content, &schemaInfo); err != nil {
+		log.Printf("couldn't unmarshal the JSON in the response from the schema registry\n")
 		return 0, err
 	}
 

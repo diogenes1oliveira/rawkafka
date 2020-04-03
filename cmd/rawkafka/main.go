@@ -100,10 +100,10 @@ func main() {
 	}
 
 	codec, err = rawkafka.LoadKafkaCodec(cmdFlags.SchemaLocation)
-	check(err)
+	checkf(err, "couldn't load the codec")
 
 	err = codec.Register(cmdFlags.SchemaRegistryURL, cmdFlags.Topic)
-	check(err)
+	checkf(err, "couldn't register the schema")
 
 	addr := fmt.Sprintf("%s:%d", cmdFlags.Host, cmdFlags.Port)
 	http.HandleFunc("/", HandleRequest)
@@ -115,9 +115,10 @@ func main() {
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
-func check(err error) {
+func checkf(err error, message string, values ...interface{}) {
 	if err != nil {
-		log.Fatalf("Error: %v\n", err)
+		message = fmt.Sprintf("ERROR: "+message, values...)
+		log.Fatalf("Error: %s\n%v\n", message, err)
 	}
 }
 
