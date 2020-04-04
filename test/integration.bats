@@ -13,6 +13,9 @@ function setup {
 
   RAWKAFKA_PID=""
   export RAWKAFKA_PORT="$(get-open-port)"
+
+  wait-for-status-code "$RAWKAFKA_SCHEMA_REGISTRY_URL/subjects/NoSchema-key/versions" 404
+  wait-for-status-code "$RAWKAFKA_REST_ENDPOINT/subjects/NoSchema-key/versions" 404
   info 'set up'
 }
 
@@ -32,14 +35,14 @@ function teardown {
   info "running rawkfaka with PID = $RAWKAFKA_PID"
 
   info "waiting for ping..."
-  if ! wait-for-ping "$url/ping" 20; then
+  if ! MAX_WAIT_TIME=10 wait-for-ping "$url/ping"; then
     cat "$log_file" | tap "rawkafka"
     exit 1
   fi
 
   info "ponged"
 
-  run curl -sv -X POST -H "X-Test: 123" "$url/random-endpoint" 2>&1
+  run curl -sv -X POST -H "X-Test: 123" "$url/random-endpoint"
   cat "$output" | tap "server"
   cat "$log_file" | tap "rawkafka"
 
