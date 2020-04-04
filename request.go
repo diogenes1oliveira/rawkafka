@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -45,7 +46,12 @@ func (reqInfo *RequestInfo) Parse(req *http.Request) {
 	}
 	reqInfo.Method = req.Method
 	reqInfo.ServerTime = time.Now()
-	reqInfo.URL = req.URL.String()
+	baseURL := url.URL{
+		Scheme: "http",
+		Host:   req.Host,
+	}
+	reqInfo.URL = baseURL.ResolveReference(req.URL).String()
+
 	if reqInfo.Body, err = ioutil.ReadAll(req.Body); err != nil {
 		reqInfo.ParseErrors = append(reqInfo.ParseErrors, err.Error())
 	}
