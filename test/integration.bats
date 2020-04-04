@@ -2,7 +2,7 @@
 
 RAWKAFKA_CMD="${RAWKAFKA_CMD:-./build/rawkafka}"
 RAWKAFKA_PID=
-export RAWKAFKA_PORT=
+export RAWKAFKA_PORT="${RAWKAFKA_PORT:-7000}"
 
 load common
 
@@ -12,10 +12,9 @@ function setup {
   [ -n "$RAWKAFKA_CMD" ] || fatal 'Empty $RAWKAFKA_CMD'
 
   RAWKAFKA_PID=""
-  export RAWKAFKA_PORT="$(get-open-port)"
 
   wait-for-status-code "$RAWKAFKA_SCHEMA_REGISTRY_URL/subjects/NoSchema-key/versions" 404
-  wait-for-status-code "$RAWKAFKA_REST_ENDPOINT/subjects/NoSchema-key/versions" 404
+  wait-for-status-code "$RAWKAFKA_REST_ENDPOINT/topics/NotExistingTopic" 404
   info 'set up'
 }
 
@@ -29,8 +28,9 @@ function teardown {
   info "listening at $url"
 
   touch "$log_file"
-  $RAWKAFKA_CMD 3>&- 2>&1 >> "$log_file" &
+  $RAWKAFKA_CMD 3>&- 2> "$log_file" >> "$log_file" &
   RAWKAFKA_PID="$!"
+  sleep 5
 
   info "running rawkfaka with PID = $RAWKAFKA_PID"
 
@@ -42,18 +42,19 @@ function teardown {
 
   info "ponged"
 
-  run curl -sv -X POST -H "X-Test: 123" "$url/random-endpoint"
-  cat "$output" | tap "server"
-  cat "$log_file" | tap "rawkafka"
+  run curl -sv -X POST -H "Accept: application/json" "$url/random-endpoint"
+  http_status="$(get-http-status "$output")"
+  info "CURL OUTPUT (http status=$http_status)"
+  echo "$output" >&3
+  info "LOG FILE"
+  cat "$log_file" >&3
 
-  if [ "$status" -ne 0 ]; then
+  if [ "$status" -ne 0 ] || [ "$http_status" -ne 200 ]; then
     cd "$BATS_TEST_DIRNAME"
-    pwd | tap "pwd"
-    
-    curl -I "$RAWKAFKA_SCHEMA_REGISTRY_URL/subjects/NoSchema-key" 2>&1 | tap "curl schema-registry"
+
     docker-compose ps | tap "docker ps"
     docker-compose config | tap "docker config"
-    docker-compose logs schema-registry | tap 'logs schema-registry'
+    docker-compose logs kafka-rest | tap 'logs kafka-rest'
     exit 1
   fi
 

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -35,7 +36,7 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
 		prefix := fmt.Sprintf("%s - %s %s - [%d %.2f ms] - ", reqInfo.IP, r.Method, r.URL.String(), statusCode, timeSpent)
 		log.Printf(prefix+message, args...)
 	}
-
+	log(0, "INFO: request handling started\n")
 	reqInfo.Parse(r)
 
 	reqBody, err := codec.Restify(&reqInfo)
@@ -58,6 +59,7 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	time.Sleep(20 * time.Second)
 	for header, values := range response.Header {
 		for _, value := range values {
 			w.Header().Add(header, value)
@@ -88,7 +90,7 @@ var cmdFlags = struct {
 	RestEndpoint      string `long:"rest-endpoint" env:"RAWKAFKA_REST_ENDPOINT" description:"Kafka REST endpoint"`
 	SchemaLocation    string `long:"schema-location" env:"RAWKAFKA_SCHEMA_LOCATION" default:"./request.avsc" description:"Avro schema location"`
 	SchemaRegistryURL string `long:"schema-registry-url" env:"RAWKAFKA_SCHEMA_REGISTRY_URL" description:"Schema registry URL"`
-	PingPath          string `long:"ping-path" env:"RAWKAFKA_PING_PATH" default:"ping" description:"Path for the ping endpoint"`
+	PingPath          string `long:"ping-path" env:"RAWKAFKA_PING_PATH" default:"/ping" description:"Path for the ping endpoint"`
 }{}
 
 func main() {
@@ -99,6 +101,13 @@ func main() {
 	if _, err = flags.Parse(&cmdFlags); err != nil {
 		os.Exit(0)
 	}
+	cmdFlags.RestEndpoint = mustResolveURI(cmdFlags.RestEndpoint, "/topics/"+cmdFlags.Topic)
+
+	cmdFlagsJSON, err := json.MarshalIndent(cmdFlags, "", "  ")
+	if err != nil {
+		checkf(err, "couldn't jsonify the parameters")
+	}
+	log.Printf("Config parameters: \n%s\n", cmdFlagsJSON)
 
 	codec, err = rawkafka.LoadKafkaCodec(cmdFlags.SchemaLocation)
 	checkf(err, "couldn't load the codec")
@@ -110,7 +119,9 @@ func main() {
 	addr := fmt.Sprintf("%s:%d", cmdFlags.Host, cmdFlags.Port)
 	http.HandleFunc("/", HandleRequest)
 	http.HandleFunc(cmdFlags.PingPath, func(w http.ResponseWriter, req *http.Request) {
+		log.Printf("ping request\n")
 		fmt.Fprintf(w, "pong")
+		defer req.Body.Close()
 	})
 
 	log.Printf("Listening on %s\n", addr)
@@ -148,4 +159,18 @@ func respondWithError(w http.ResponseWriter, err error, log RequestLoggerFunc) {
 	if _, err = w.Write(reqBody); err != nil {
 		log(0, "ERROR: Failed to write the error response body - %v\n", err)
 	}
+}
+
+func mustResolveURI(baseURL string, path string) string {
+	uBase, err := url.Parse(baseURL)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Bad URL: %#+v\n", baseURL)
+		os.Exit(1)
+	}
+	uPath, err := url.Parse(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Bad path component: %#+v\n", path)
+		os.Exit(1)
+	}
+	return uBase.ResolveReference(uPath).String()
 }
