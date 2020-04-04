@@ -26,7 +26,7 @@ Link to the current Avro schema: https://github.com/diogenes1oliveira/rawkafka/b
 Run it with Docker:
 
 ``` sh
-$ docker run -it --rm -e RAWKAFKA_TOPIC=SampleTopic -p 7000:7000 diogenes1oliveira/rawkafka --port 7000
+$ docker run -it --rm -e RAWKAFKA_TOPIC=SampleTopic -p 7000:7000 diogenes1oliveira/rawkafka:1.0.0 --port 7000
 ```
 
 ## Usage

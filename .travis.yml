@@ -24,8 +24,8 @@ env:
 before_install:
   - sudo apt-get install -y bats
   - (cd test && docker-compose pull)
-  # - docker pull hadolint/hadolint
-  # - docker pull golangci/golangci-lint:v1.22.0
+  - docker pull hadolint/hadolint
+  - docker pull golangci/golangci-lint:v1.22.0
 
 install:
   - (cd test && docker-compose up -d)
@@ -36,14 +36,15 @@ install:
   - sleep 5
 
 script:
-  # - make lint
-  # - make test
+  - make lint
+  - make test
   - make clean
   - make build
   - bats test/integration.bats
-  # - docker build -t "${DOCKER_IMAGE_REPO}:${DOCKER_IMAGE_TAG}" .
+  - docker build -t "${DOCKER_IMAGE_REPO}:${DOCKER_IMAGE_TAG}" .
 
 before_deploy:
+  - '[ -n "$DOCKER_REPO_USER" ] && [ -n "$DOCKER_REPO_ACCESS_TOKEN" ]'
   - docker login -u "${DOCKER_REPO_USER}" -p "${DOCKER_REPO_ACCESS_TOKEN}"
   - docker tag "${DOCKER_IMAGE_REPO}:${DOCKER_IMAGE_TAG}" "${DOCKER_IMAGE_REPO}:latest"
 
