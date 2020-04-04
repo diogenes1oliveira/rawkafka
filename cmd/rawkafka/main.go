@@ -105,6 +105,7 @@ func main() {
 
 	err = codec.Register(cmdFlags.SchemaRegistryURL, cmdFlags.Topic)
 	checkf(err, "couldn't register the schema")
+	log.Printf("schema registered with id = %d\n", codec.ValueSchemaID)
 
 	addr := fmt.Sprintf("%s:%d", cmdFlags.Host, cmdFlags.Port)
 	http.HandleFunc("/", HandleRequest)

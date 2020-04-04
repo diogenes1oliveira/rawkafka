@@ -39,10 +39,11 @@ function teardown {
 
   info "ponged"
 
-  run curl -X POST -H "X-Test: 123" "$url/random-endpoint"
+  run curl -sv -X POST -H "X-Test: 123" "$url/random-endpoint" 2>&1
+  cat "$output" | tap "server"
+  cat "$log_file" | tap "rawkafka"
 
   if [ "$status" -ne 0 ]; then
-    info "$output"
     cd "$BATS_TEST_DIRNAME"
     pwd | tap "pwd"
     
