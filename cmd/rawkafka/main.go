@@ -88,6 +88,7 @@ var cmdFlags = struct {
 	RestEndpoint      string `long:"rest-endpoint" env:"RAWKAFKA_REST_ENDPOINT" description:"Kafka REST endpoint"`
 	SchemaLocation    string `long:"schema-location" env:"RAWKAFKA_SCHEMA_LOCATION" default:"./request.avsc" description:"Avro schema location"`
 	SchemaRegistryURL string `long:"schema-registry-url" env:"RAWKAFKA_SCHEMA_REGISTRY_URL" description:"Schema registry URL"`
+	PingPath          string `long:"ping-path" env:"RAWKAFKA_PING_PATH" default:"ping" description:"Path for the ping endpoint"`
 }{}
 
 func main() {
@@ -107,7 +108,7 @@ func main() {
 
 	addr := fmt.Sprintf("%s:%d", cmdFlags.Host, cmdFlags.Port)
 	http.HandleFunc("/", HandleRequest)
-	http.HandleFunc("/ping", func(w http.ResponseWriter, req *http.Request) {
+	http.HandleFunc(cmdFlags.PingPath, func(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "pong")
 	})
 
